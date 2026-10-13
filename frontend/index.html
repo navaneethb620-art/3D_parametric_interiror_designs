@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametric 3D Interior VR</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="ui-container">
+        <h2>Interaction Mode</h2>
+        <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <button id="mode-arrange-btn" style="flex: 1; padding: 10px 8px; margin-bottom: 0; background: #28a745; color: white; border-radius: 6px; font-size: 13px; font-weight: bold; border: none; cursor: pointer;">
+                🖐️ Drag & Drop
+            </button>
+            <button id="mode-walk-btn" style="flex: 1; padding: 10px 8px; margin-bottom: 0; background: #495057; color: #adb5bd; border-radius: 6px; font-size: 13px; font-weight: bold; border: none; cursor: pointer;">
+                🚶 Walk (WASD)
+            </button>
+        </div>
+
+        <div id="selection-controls" style="display: none; background: #2a2a2a; border: 1px solid #444; padding: 10px; border-radius: 6px; margin-bottom: 15px; color: #fff;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 12px; font-weight: bold; color: #00ff88;" id="selected-item-name">Selected: Furniture</span>
+                <button id="deselect-btn" style="width: auto; padding: 2px 8px; margin: 0; background: #555; font-size: 11px;">✕</button>
+            </div>
+            <div style="display: flex; gap: 6px;">
+                <button id="rotate-left-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟲ -45°</button>
+                <button id="rotate-right-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟳ +45° (R)</button>
+            </div>
+        </div>
+        
+        <hr>
+
+        <h2>Room Configuration</h2>
+        
+        <div class="input-group">
+            <label>Length (m):</label>
+            <input type="number" id="room-length" value="5" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>Width (m):</label>
+            <input type="number" id="room-width" value="4" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>Height (m):</label>
+            <input type="number" id="room-height" value="3" step="0.1">
+        </div>
+
+        <div class="input-group">
+            <label>Room Category:</label>
+            <select id="room-category">
+                <option value="living">Living Hall</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Select Furnishings:</label>
+            <div id="furniture-options" style="font-size: 13px; max-height: 120px; overflow-y: auto; background: #2a2a2a; border: 1px solid #444; padding: 5px; border-radius: 4px; display:flex; flex-direction:column; gap:5px;">
+                <!-- Populated by JS -->
+            </div>
+            <p id="space-warning" style="color: #ff5555; font-size: 12px; margin-top: 5px; display: none; font-weight: bold;"></p>
+        </div>
+        
+        <button id="update-room-btn">Update Geometry & Layout</button>
+        
+        <hr>
+        
+        <h2>Style Generation</h2>
+        
+        <div class="input-group">
+            <label>Surface to Style:</label>
+            <select id="surface-type">
+                <option value="wall">Walls</option>
+                <option value="floor">Floor</option>
+                <option value="ceiling">Ceiling</option>
+            </select>
+        </div>
+
+        <hr style="margin:10px 0;">
+
+        <!-- Toggle between AI Pattern vs Solid Color -->
+        <div class="input-group" style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" id="use-solid-color" style="width:auto;">
+            <label style="margin:0; font-weight:bold;">Use Solid Color (Skip AI)</label>
+        </div>
+
+        <div id="solid-color-section" style="display:none; margin-bottom:15px;">
+            <label>Choose Color:</label>
+            <input type="color" id="solid-color-picker" value="#cccccc" style="width:100%; height:40px;">
+        </div>
+
+        <div id="ai-style-section">
+            <div class="input-group">
+                <label>Style Preset (Texture/Pattern):</label>
+                <select id="style-preset">
+                    <option value="white oak wood">White Oak Wood</option>
+                    <option value="exposed red brick">Exposed Red Brick</option>
+                    <option value="concrete">Polished Concrete</option>
+                    <option value="floral vintage wallpaper">Floral Vintage Wallpaper</option>
+                    <option value="custom">Custom (Type below)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Custom Pattern Prompt:</label>
+                <input type="text" id="style-prompt" placeholder="e.g., rustic dark oak wood..." value="white oak wood">
+            </div>
+            
+            <div class="input-group">
+                <label>Consistency Seed (Use same number for matching styles):</label>
+                <input type="number" id="style-seed" value="42">
+            </div>
+
+            <div class="input-group">
+                <label>Reference Image (Optional):</label>
+                <input type="file" id="ref-image" accept="image/*">
+            </div>
+            <div class="input-group">
+                <label>Sketch (Optional):</label>
+                <input type="file" id="sketch-image" accept="image/*">
+            </div>
+        </div>
+        
+        <button id="generate-btn">Apply Style</button>
+        <p id="status-msg"></p>
+        
+        <hr>
+        <!-- WebXR button will be injected by Three.js -->
+    </div>
+    
+    <div id="canvas-container" style="position: relative;">
+        <div id="mode-hud" style="position: absolute; top: 15px; left: 15px; background: rgba(20,20,20,0.85); color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 5; pointer-events: none; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.4);">
+            🖐️ <b>Drag & Drop Mode:</b> Click & drag any furniture across the floor. Press <b>[R]</b> to rotate. Right-click to pan camera.
+        </div>
+    </div>
+
+    <!-- Import Map for Three.js -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="main.js?v=24"></script>
+</body>
+</html>
