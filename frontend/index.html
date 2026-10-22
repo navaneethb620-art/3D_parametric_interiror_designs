@@ -23,9 +23,13 @@
                 <span style="font-size: 12px; font-weight: bold; color: #00ff88;" id="selected-item-name">Selected: Furniture</span>
                 <button id="deselect-btn" style="width: auto; padding: 2px 8px; margin: 0; background: #555; font-size: 11px;">✕</button>
             </div>
-            <div style="display: flex; gap: 6px;">
-                <button id="rotate-left-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟲ -45°</button>
-                <button id="rotate-right-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟳ +45° (R)</button>
+            <div style="display: flex; gap: 6px; margin-bottom: 6px;">
+                <button id="rotate-left-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟲ -45° / Prev Wall</button>
+                <button id="rotate-right-btn" style="flex: 1; padding: 7px; margin-bottom: 0; background: #007bff; font-size: 12px;">⟳ +45° / Next Wall (R)</button>
+            </div>
+            <div id="height-controls-row" style="display: flex; gap: 6px;">
+                <button id="height-down-btn" style="flex: 1; padding: 6px; margin-bottom: 0; background: #5a6268; color: #fff; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">🔽 Lower (-10cm)</button>
+                <button id="height-up-btn" style="flex: 1; padding: 6px; margin-bottom: 0; background: #5a6268; color: #fff; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">🔼 Raise (+10cm)</button>
             </div>
         </div>
         
@@ -47,6 +51,136 @@
         </div>
 
         <div class="input-group">
+            <label>Ceiling Architecture & Lighting:</label>
+            <select id="ceiling-style">
+                <option value="modern_tray" selected>✨ Modern Tray (Cove LEDs, Spots & Pendant - Like Photo)</option>
+                <option value="circular_ring">⭕ Modern Circular Ring with Dual Cove & Slat Accents (Photo Match)</option>
+                <option value="coffered_grid">🏛️ Luxury Coffered Grid Ceiling</option>
+                <option value="wooden_slats">🪵 Modern Linear Wooden Slats with LED Channels</option>
+                <option value="floating_island">🏝️ Floating Island Ceiling with 360° Halo Glow</option>
+                <option value="minimal_spots">💡 Minimalist Recessed Spotlights Grid</option>
+                <option value="flat">⬜ Standard Flat Ceiling</option>
+            </select>
+            <div id="detected-ceiling-badge" style="display:none; font-size:11px; color:#00ff88; background:#183626; border:1px solid #28a745; padding:5px 8px; border-radius:4px; margin-top:6px; font-weight:bold;"></div>
+        </div>
+
+        <div class="input-group" style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <input type="checkbox" id="show-ceiling-checkbox" style="width:16px; height:16px; cursor:pointer;" checked>
+            <label for="show-ceiling-checkbox" style="margin:0; cursor:pointer; color:#00ff88; font-size:12px;">👀 Show Ceiling in 3D View</label>
+        </div>
+
+        <!-- Architectural Openings: Doors & Windows (Parametric & Auto-Resizing) -->
+        <div style="background:#242424; border:1px solid #3d3d3d; border-radius:6px; padding:10px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="color:#00ff88; font-weight:bold; margin:0; font-size:12px;">🚪 Doors & 🪟 Windows (Auto-Resizing):</label>
+            </div>
+            
+            <!-- Window Section -->
+            <div style="margin-bottom:8px; border-bottom:1px solid #333; padding-bottom:8px;">
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <input type="checkbox" id="enable-window-checkbox" style="width:15px; height:15px; cursor:pointer;" checked>
+                    <label for="enable-window-checkbox" style="margin:0; cursor:pointer; color:#eee; font-size:12px; font-weight:bold;">🪟 Architectural Window / Balcony</label>
+                </div>
+                <div id="window-options-container" style="padding-left:6px;">
+                    <label style="font-size:11px; color:#aaa; display:block; margin-bottom:2px;">Window Style:</label>
+                    <select id="window-style" style="width:100%; font-size:11px; padding:4px; margin-bottom:6px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                        <option value="balcony_sliding" selected>🪟 Balcony Sliding Glass Door (Floor-to-Ceiling with Drapes - Photo Match)</option>
+                        <option value="panoramic_picture">🖼️ Modern Panoramic Picture Window (Black Aluminum & Sill)</option>
+                        <option value="casement_double">🪟 Double Casement Window with Mullions</option>
+                    </select>
+                    <div style="display:flex; gap:6px;">
+                        <div style="flex:1;">
+                            <label style="font-size:10px; color:#aaa;">Wall Location:</label>
+                            <select id="window-wall" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                                <option value="north" selected>North (Straight)</option>
+                                <option value="west">West (Left)</option>
+                                <option value="east">East (Right)</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:10px; color:#aaa;">Size Scale:</label>
+                            <select id="window-scale" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                                <option value="auto" selected>✨ Auto-Fit Wall</option>
+                                <option value="large">Large (75% wall)</option>
+                                <option value="medium">Medium (50% wall)</option>
+                                <option value="compact">Compact (35% wall)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Door Section -->
+            <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <input type="checkbox" id="enable-door-checkbox" style="width:15px; height:15px; cursor:pointer;" checked>
+                    <label for="enable-door-checkbox" style="margin:0; cursor:pointer; color:#eee; font-size:12px; font-weight:bold;">🚪 Architectural Door</label>
+                </div>
+                <div id="door-options-container" style="padding-left:6px;">
+                    <label style="font-size:11px; color:#aaa; display:block; margin-bottom:2px;">Door Style:</label>
+                    <select id="door-style" style="width:100%; font-size:11px; padding:4px; margin-bottom:6px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                        <option value="modern_wood" selected>🚪 Modern Walnut Wood Door with Lever Handle</option>
+                        <option value="white_minimal">🚪 Minimalist White Lacquer Door with Architrave</option>
+                        <option value="groove_panel">🚪 Contemporary Charcoal Groove Panel Door</option>
+                        <option value="glass_interior">🚪 Black Metal & Frosted Glass Interior Door</option>
+                    </select>
+                    <div style="display:flex; gap:6px;">
+                        <div style="flex:1;">
+                            <label style="font-size:10px; color:#aaa;">Wall Location:</label>
+                            <select id="door-wall" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                                <option value="south" selected>South (Entrance Wall)</option>
+                                <option value="east">East (Right Wall)</option>
+                                <option value="west">West (Left Wall)</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:10px; color:#aaa;">Position:</label>
+                            <select id="door-position" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                                <option value="right_corner" selected>Right Side</option>
+                                <option value="left_corner">Left Side</option>
+                                <option value="center">Center</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TV Wall Decor Section (Photo Match) -->
+        <div class="input-group" style="background:#222; border:1px solid #3a3a3a; padding:8px; border-radius:5px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <label style="color:#00ff88; font-weight:bold; margin:0; font-size:12px;">📺 TV Wall Decor & Woodwork:</label>
+            </div>
+            
+            <div style="margin-bottom:6px;">
+                <label style="font-size:11px; color:#aaa; display:block; margin-bottom:2px;">Design Style (Matching Reference Photos):</label>
+                <select id="tv-decor-style" style="width:100%; font-size:11px; padding:4px; margin-bottom:6px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                    <option value="fluted_marble_shelf" selected>🖼️ Fluted Slats + Marble & Lighted Shelves (Photo 1 Match)</option>
+                    <option value="walnut_fireplace">🔥 Luxury Walnut Bookcases & Linear Fireplace (Photo 2 Match)</option>
+                    <option value="japandi_slats">🪵 Full Acoustic Slat Wall & Low White Credenza (Photo 3 Match)</option>
+                </select>
+            </div>
+            
+            <div style="display:flex; gap:6px;">
+                <div style="flex:1;">
+                    <label style="font-size:10px; color:#aaa;">Wood Finish:</label>
+                    <select id="tv-wood-finish" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                        <option value="walnut" selected>Warm Walnut</option>
+                        <option value="natural_oak">Scandinavian Oak</option>
+                        <option value="charcoal">Dark Charcoal</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:10px; color:#aaa;">Console Mount:</label>
+                    <select id="tv-console-type" style="width:100%; font-size:11px; padding:3px; background:#1b1b1b; color:#fff; border:1px solid #444; border-radius:3px;">
+                        <option value="floating" selected>✨ Floating with LED Under-glow</option>
+                        <option value="floor_legs">Floor (Slim Metal Legs)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
             <label>Room Category:</label>
             <select id="room-category">
                 <option value="living">Living Hall</option>
@@ -61,37 +195,142 @@
             <p id="space-warning" style="color: #ff5555; font-size: 12px; margin-top: 5px; display: none; font-weight: bold;"></p>
         </div>
         
-        <button id="update-room-btn">Update Geometry & Layout</button>
+        <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <button id="update-room-btn" style="flex:2; margin:0;">Update Geometry & Layout</button>
+            <button type="button" id="reset-all-furniture-btn" style="flex:1; margin:0; padding:8px 4px; font-size:11px; background:#343a40; color:#ddd; border-radius:4px; border:1px solid #555; cursor:pointer;" title="Reset all rotated or moved furniture back to default layout positions">🔄 Reset Layout</button>
+        </div>
         
         <hr>
         
-        <h2>Style Generation</h2>
+        <h2>Style & Material</h2>
         
         <div class="input-group">
             <label>Surface to Style:</label>
             <select id="surface-type">
-                <option value="wall">Walls</option>
-                <option value="floor">Floor</option>
-                <option value="ceiling">Ceiling</option>
+                <option value="all-walls">All Walls</option>
+                <option value="left">Wall 1: Left Wall</option>
+                <option value="right">Wall 2: Right Wall</option>
+                <option value="north">Wall 3: North Wall (Straight)</option>
+                <option value="south">Wall 4: South Wall (Behind Sofa)</option>
+                <option value="ceiling">Surface 5: Ceiling</option>
+                <option value="floor">Surface 6: Floor</option>
             </select>
         </div>
 
-        <hr style="margin:10px 0;">
-
-        <!-- Toggle between AI Pattern vs Solid Color -->
-        <div class="input-group" style="display:flex; align-items:center; gap:10px;">
-            <input type="checkbox" id="use-solid-color" style="width:auto;">
-            <label style="margin:0; font-weight:bold;">Use Solid Color (Skip AI)</label>
+        <div class="input-group">
+            <label>Style Mode:</label>
+            <div style="display:flex; gap:6px;">
+                <button type="button" id="tab-photo-btn" style="flex:1; padding:8px 4px; font-size:12px; margin-bottom:0; background:#28a745; color:white; border-radius:4px;">📷 Photo Palette</button>
+                <button type="button" id="tab-ai-btn" style="flex:1; padding:8px 4px; font-size:12px; margin-bottom:0; background:#495057; color:#adb5bd; border-radius:4px;">✨ AI Texture</button>
+                <button type="button" id="tab-color-btn" style="flex:1; padding:8px 4px; font-size:12px; margin-bottom:0; background:#495057; color:#adb5bd; border-radius:4px;">🎨 Solid Color</button>
+            </div>
         </div>
 
-        <div id="solid-color-section" style="display:none; margin-bottom:15px;">
-            <label>Choose Color:</label>
-            <input type="color" id="solid-color-picker" value="#cccccc" style="width:100%; height:40px;">
+        <!-- 1. Photo Section: AI Room Photo Wall Palette Extractor -->
+        <div id="photo-style-section" style="margin-bottom:15px; background:#2a2a2a; border:1px solid #444; padding:12px; border-radius:6px;">
+            <div class="input-group" style="margin-bottom:10px;">
+                <label style="color:#ddd; font-weight:bold;">Upload Room Photo (Living Room, Bedroom, etc.):</label>
+                <input type="file" id="ref-image" accept="image/*" style="color:#eee; font-size:12px; padding:6px; background:#1e1e1e; border:1px solid #555; border-radius:4px; width:100%;">
+                <small style="color:#aaa; display:block; margin-top:4px; font-size:11px;">
+                    ✨ Auto-decomposes 3D ceiling architecture & extracts wall colors.
+                </small>
+            </div>
+
+            <!-- Optional Gemini Vision Key Accordion -->
+            <details style="margin-bottom:10px; background:#1b222a; border:1px solid #2a3a4d; border-radius:4px; padding:6px 8px; font-size:11px;">
+                <summary style="cursor:pointer; color:#58a6ff; font-weight:bold; outline:none;">
+                    🤖 Google Gemini 3.8 Flash Vision Key (Optional)
+                </summary>
+                <div style="margin-top:6px;">
+                    <input type="password" id="gemini-api-key-input" value="" placeholder="Paste Google AI Studio Gemini API Key..." style="width:100%; font-size:11px; padding:5px; background:#111; color:#fff; border:1px solid #444; border-radius:3px;">
+                    <small style="color:#00ff88; display:block; margin-top:3px; font-size:10px;">
+                        Optional: saved locally in browser. Automatic Computer Vision fallback used if omitted.
+                    </small>
+                </div>
+            </details>
+
+            <!-- Preview and interactive sample canvas -->
+            <div id="photo-preview-container" style="display:none; margin-bottom:12px; background:#1a1a1a; padding:8px; border-radius:4px; border:1px solid #333;">
+                <div style="position:relative; max-width:100%; margin:0 auto 6px; overflow:hidden; border-radius:4px; border:1px solid #555; cursor:crosshair;" id="photo-canvas-wrapper" title="Click anywhere on the photo to sample color for selected surface">
+                    <canvas id="photo-preview-canvas" style="display:block; width:100%; height:auto;"></canvas>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <span id="photo-filename" style="font-size:11px; color:#aaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:180px;"></span>
+                    <button type="button" id="clear-photo-btn" style="width:auto; padding:3px 8px; margin:0; background:#dc3545; font-size:11px; border-radius:3px;">✕ Clear</button>
+                </div>
+                <small style="color:#00ff88; font-size:11px; display:block; margin-top:4px;">💡 <b>Interactive Pointers:</b> Drag pins <b>1–6</b> on the photo to accurately sample Wall 1–4, Ceiling (5), and Floor (6) in real-time!</small>
+            </div>
+
+            <!-- Extracted Palette Swatches Grid -->
+            <div id="palette-cards-container" style="display:none; margin-top:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label style="color:#00ff88; font-weight:bold; font-size:12px; margin:0;">
+                        🎨 Extracted Room Palette:
+                    </label>
+                    <span style="font-size:10px; color:#aaa;">(Click swatch to tweak)</span>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px;">
+                    <!-- Wall 1: Left -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-left" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">1: Left Wall</div>
+                            <div id="hex-left" style="font-size:10px; color:#aaa; font-family:monospace;">#eeeeee</div>
+                        </div>
+                    </div>
+                    <!-- Wall 2: Right -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-right" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">2: Right Wall</div>
+                            <div id="hex-right" style="font-size:10px; color:#aaa; font-family:monospace;">#eeeeee</div>
+                        </div>
+                    </div>
+                    <!-- Wall 3: North (Straight) -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-north" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">3: North Wall</div>
+                            <div id="hex-north" style="font-size:10px; color:#aaa; font-family:monospace;">#eeeeee</div>
+                        </div>
+                    </div>
+                    <!-- Wall 4: South (Behind Sofa) -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-south" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">4: South Wall</div>
+                            <div id="hex-south" style="font-size:10px; color:#aaa; font-family:monospace;">#eeeeee</div>
+                        </div>
+                    </div>
+                    <!-- Surface 5: Ceiling -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-ceiling" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">5: Ceiling</div>
+                            <div id="hex-ceiling" style="font-size:10px; color:#aaa; font-family:monospace;">#fff0e5</div>
+                        </div>
+                    </div>
+                    <!-- Surface 6: Floor -->
+                    <div class="palette-card" style="background:#1e1e1e; border:1px solid #444; border-radius:4px; padding:6px; display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="picker-floor" style="width:28px; height:28px; padding:0; border:none; border-radius:4px; cursor:pointer;">
+                        <div style="overflow:hidden;">
+                            <div style="font-size:11px; font-weight:bold; color:#fff;">6: Floor</div>
+                            <div id="hex-floor" style="font-size:10px; color:#aaa; font-family:monospace;">#aaaaaa</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="apply-all-palette-btn" style="width:100%; margin-top:10px; padding:8px; background:#007bff; color:white; font-size:12px; font-weight:bold; border-radius:4px; border:none; cursor:pointer;">
+                    🎨 Re-Apply Palette to 3D Room
+                </button>
+            </div>
         </div>
 
-        <div id="ai-style-section">
+        <!-- 2. AI Style Section -->
+        <div id="ai-style-section" style="display:none; margin-bottom:15px; background:#2a2a2a; border:1px solid #444; padding:12px; border-radius:6px;">
             <div class="input-group">
-                <label>Style Preset (Texture/Pattern):</label>
+                <label style="color:#ddd;">Style Preset (Texture/Pattern):</label>
                 <select id="style-preset">
                     <option value="white oak wood">White Oak Wood</option>
                     <option value="exposed red brick">Exposed Red Brick</option>
@@ -101,26 +340,25 @@
                 </select>
             </div>
             <div class="input-group">
-                <label>Custom Pattern Prompt:</label>
+                <label style="color:#ddd;">Custom Pattern Prompt:</label>
                 <input type="text" id="style-prompt" placeholder="e.g., rustic dark oak wood..." value="white oak wood">
             </div>
             
             <div class="input-group">
-                <label>Consistency Seed (Use same number for matching styles):</label>
+                <label style="color:#ddd;">Consistency Seed:</label>
                 <input type="number" id="style-seed" value="42">
             </div>
+        </div>
 
-            <div class="input-group">
-                <label>Reference Image (Optional):</label>
-                <input type="file" id="ref-image" accept="image/*">
-            </div>
-            <div class="input-group">
-                <label>Sketch (Optional):</label>
-                <input type="file" id="sketch-image" accept="image/*">
+        <!-- 3. Solid Color Section -->
+        <div id="solid-color-section" style="display:none; margin-bottom:15px; background:#2a2a2a; border:1px solid #444; padding:12px; border-radius:6px;">
+            <div class="input-group" style="margin-bottom:0;">
+                <label style="color:#ddd;">Choose Color:</label>
+                <input type="color" id="solid-color-picker" value="#cccccc" style="width:100%; height:40px; cursor:pointer; border:none; border-radius:4px;">
             </div>
         </div>
         
-        <button id="generate-btn">Apply Style</button>
+        <button id="generate-btn" style="font-size:14px; font-weight:bold; padding:12px;">Apply Style</button>
         <p id="status-msg"></p>
         
         <hr>
@@ -142,6 +380,6 @@
         }
       }
     </script>
-    <script type="module" src="main.js?v=24"></script>
+    <script type="module" src="main.js?v=36"></script>
 </body>
 </html>
