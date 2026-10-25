@@ -1,159 +1,202 @@
 # Parametric 3D Interior Space Planner with Immersive VR & AI Texture Synthesis
 
-A web-based, real-time 3D interior design platform. Enter a room's dimensions, furnish it with 3D models, drag and rotate furniture on the floor plan, and then walk through the finished space in first-person or in a VR headset.
+A browser-based interior design application for creating and exploring a customizable 3D living space. Users can configure room dimensions and architectural elements, view furniture in the scene, and explore the room using a first-person walkthrough. The project also includes a backend for AI-assisted texture generation and an optional ceiling-blueprint analysis endpoint.
 
-> **Project status:** Phase 1 (3D room + furniture + VR) is complete. Phase 2 (Generative AI texture synthesis) is in progress.
+Developed as part of the **Code Unnati** program by **SAP** and **Edunet Foundation**.
 
-Built as part of the **Code Unnati** program (SAP + Edunet Foundation).
+## Project Status
 
----
+The current application demonstrates a working 3D room scene, architectural customization controls, first-person Walk Mode, and a ceiling-analysis result panel. The backend includes a texture-generation endpoint and an optional ceiling-image analysis endpoint. Availability of AI providers and WebXR depends on configuration, connectivity, browser support, and compatible hardware; these features should be tested in the target environment before being described as fully operational.
 
 ## Features
 
-### Phase 1: 3D Engine and Furniture (Complete)
+### 3D room and furniture
 
-- **Parametric room generation:** set Length, Width, and Height and the room is rebuilt instantly in code (floor, four walls, ceiling). No static room file is loaded.
-- **Space constraint engine:** compares the room's floor area against the combined footprint of all furniture and warns the user if furniture exceeds 95% of the floor space.
-- **3D furniture loading:** imports `.gltf` / `.glb` models and normalizes them to real-world dimensions, so models of any original scale fit correctly.
-- **Drag and drop:** move furniture across the floor with the mouse, with boundary clamping so nothing can be dragged through a wall.
-- **Rotation:** press `R` to rotate the selected item by 45 degrees. A highlight box shows which item is active.
-- **Grouped furniture:** composite items (for example a TV unit with its TV and console) move together as one object.
-- **Two interaction modes:**
-  - *Arrange mode:* elevated isometric camera with orbit, pan, and zoom, ceiling hidden.
-  - *Walk mode:* first-person eye-level view with `W A S D` movement and mouse look, ceiling enclosed.
-- **WebXR VR support:** one-click VR mode for compatible headsets (e.g. Meta Quest) via the browser.
+- **Parametric room dimensions:** Configure room length, width, and height to build the room from geometry rather than loading a fixed room model.
+- **Procedural room geometry:** Create a floor, four walls, and a ceiling.
+- **3D furniture models:** Load `.gltf` and `.glb` assets and normalize their scale for use in the scene.
+- **Furniture placement:** Arrange furniture in the room using mouse interaction, with placement constrained by room boundaries where implemented.
+- **Furniture rotation:** Rotate the selected item using the `R` key.
+- **Arrange and Walk modes:** Use a camera-based arrangement view or first-person navigation with `W`, `A`, `S`, `D` and mouse look.
 
-### Phase 2: Generative AI Texture Synthesis (In Progress)
+### Architectural customization
 
-- Prompt-to-texture generation for walls, floors, and ceilings (for example "dark oak herringbone wood").
-- A FastAPI backend that sanitizes prompts so the model produces a flat, tileable material rather than a picture of a room.
-- Generated textures are returned to the browser and applied to surfaces as tiling PBR materials.
-- Solid color fallback when the AI backend is unavailable.
+The interface includes controls for ceiling architecture and lighting, and for enabling and configuring architectural windows and doors. Available options include window style, wall location, size scale, door style, and door position. The exact options depend on the controls available in the current frontend.
 
----
+### AI-assisted ceiling analysis
+
+The backend exposes `POST /analyze-ceiling-blueprint` for an uploaded image. When a Gemini API key is configured, the endpoint attempts to use Gemini vision to return a structured ceiling-design description. If no key is supplied or the model request fails, the endpoint falls back to a computer-vision routine that estimates ceiling characteristics from image colors. The fallback is heuristic and should not be treated as a precise architectural measurement or a substitute for professional assessment.
+
+### Texture generation
+
+The backend exposes `POST /generate-texture`. It accepts a prompt and surface type, and returns the generated image as a base64 data URL for the frontend to use.
+
+- `USE_MOCK=True` (the current default) returns a generated placeholder texture for development and testing.
+- `USE_MOCK=False` attempts to request an image from the Pollinations image endpoint. If the request fails, the backend falls back to a mock texture.
+- The published texture-generation code does **not** currently call Replicate, despite an unused `replicate` import. Do not configure or describe Replicate as the active provider unless the implementation is changed and tested.
 
 ## How It Works
 
-### Parametric room
-The room is generated procedurally from `L x W x H`:
-- Floor: `PlaneGeometry`, rotated flat onto the ground plane.
-- Walls: four planes (N, S, E, W), positioned and rotated so their normals face inward.
-- Ceiling: a thin box placed on top of the walls.
+### Procedural room generation
 
-### Model normalization
-Downloaded 3D models come in arbitrary scales. Each model's bounding box is measured with `Box3.setFromObject()`, then scaled by `target size / actual size` on each axis so it matches real-world dimensions. Loaded geometry is cached and reused with `.clone()` to avoid redundant loading and memory growth.
+The room is built from the configured dimensions using Three.js geometry. The scene includes a floor, four walls, and a ceiling, with the furniture and architectural elements rendered in the same 3D environment.
 
-### Drag and drop
-A `Raycaster` projects the mouse cursor into 3D space and intersects it with an invisible horizontal floor plane. The intersection point updates the furniture's `(x, z)` position while its height stays fixed. Positions are clamped to the room boundaries.
+### Furniture model handling
 
-### Texture pipeline (Phase 2)
-1. The user enters a prompt and picks a surface (walls, floor, or ceiling).
-2. The frontend sends a request to the FastAPI `/generate-texture` endpoint.
-3. The backend cleans the prompt and calls an image generation model.
-4. The returned image is applied in Three.js with `RepeatWrapping` on a `MeshStandardMaterial`.
+The frontend loads GLTF/GLB models. Model bounds can be measured with `Box3.setFromObject()` and used to normalize model scale. The loaded models are then positioned in the room.
 
----
+### Furniture interaction
 
-## Tech Stack
+Three.js raycasting can be used to translate pointer interaction into a 3D position. In the current interaction design, furniture movement is constrained to the floor plane and room boundaries. The `R` key rotates the selected furniture item.
 
-| Layer | Technology |
+### Texture-generation flow
+
+1. The user supplies a texture prompt and selects a surface type.
+2. The frontend sends the request to the FastAPI `/generate-texture` endpoint.
+3. The backend either returns a development placeholder (`USE_MOCK=True`) or attempts to fetch an image from Pollinations (`USE_MOCK=False`).
+4. The returned image is encoded as a data URL for the frontend.
+5. The frontend can apply the image to a Three.js material. Confirm the complete generation-and-application flow in the running version before presenting it as fully working.
+
+### Ceiling-analysis flow
+
+1. The client uploads an image to `/analyze-ceiling-blueprint`.
+2. The backend uses a supplied `gemini_api_key` form field or the `GEMINI_API_KEY` environment variable, if available.
+3. If the Gemini request succeeds, the endpoint returns the model's structured result. Otherwise, it attempts the computer-vision fallback.
+4. The response identifies the analysis source and includes the resulting blueprint data.
+
+## Technology Stack
+
+| Area | Technology |
 |---|---|
-| 3D rendering | Three.js (r160), WebGL |
-| VR | WebXR API (`VRButton`) |
-| Model loading | `GLTFLoader` |
-| Cameras | `OrbitControls` (arrange), `PointerLockControls` (walk) |
-| Interaction math | Three.js `Raycaster` and `Plane` |
-| Backend | FastAPI (Python) |
-| Image handling | Pillow |
-| Generative AI (Phase 2) | Stable Diffusion / Flux via a hosted API |
-
----
+| 3D rendering | Three.js, WebGL |
+| 3D asset loading | `GLTFLoader`, `.gltf` / `.glb` models |
+| Arrange camera | `OrbitControls` |
+| First-person navigation | `PointerLockControls` |
+| 3D interaction | Three.js `Raycaster` and geometry/planes |
+| Backend API | Python, FastAPI |
+| Image processing | Pillow; NumPy for the computer-vision fallback |
+| Texture image source | Pollinations endpoint when `USE_MOCK=False` |
+| Optional image understanding | Gemini API when configured |
+| Optional VR | WebXR API / `VRButton`, where supported |
 
 ## Getting Started
 
 ### Prerequisites
-- A modern browser with WebGL support (Chrome, Edge, Firefox)
-- Python 3.9+ (only needed for the Phase 2 backend)
-- A WebXR-capable headset, optional, for VR mode
 
-### Run the frontend
-Because the frontend uses ES modules, serve it from a local web server rather than opening `index.html` directly:
+- A modern browser with WebGL support.
+- Python installed for the backend (Python 3.9 or later is a reasonable baseline; use the version supported by the dependencies in `backend/requirements.txt`).
+- Internet access for external image-generation or Gemini requests.
+- A compatible WebXR browser and headset for VR testing. VR is optional.
+
+### 1. Start the frontend
+
+Serve the frontend through a local web server rather than opening `index.html` directly, because the application uses JavaScript modules.
 
 ```bash
 cd frontend
-python -m http.server 8080
+python -m http.server 5500
 ```
 
-Then open `http://localhost:8080` in your browser.
+Open `http://localhost:5500` in your browser. If your frontend is configured to use a different port, use that port instead.
 
-### Run the backend (Phase 2)
+### 2. Start the backend
+
+Open a second terminal:
+
 ```bash
 cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
+python -m venv .venv
 ```
 
-If your texture provider needs an API key, set it as an environment variable and never commit it to the repository:
+Activate the environment:
+
+**Windows PowerShell**
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+**macOS / Linux**
 
 ```bash
-export REPLICATE_API_TOKEN=your_token_here
+source .venv/bin/activate
 ```
 
-> Update the folder names and commands above to match your repository layout.
+Install dependencies and start FastAPI:
 
----
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload --host 127.0.0.1 --port 8000
+```
+
+The API documentation should be available at `http://127.0.0.1:8000/docs` while the backend is running.
+
+If port `8000` is already occupied, stop the process using it or start the backend on another port and update the frontend API URL to match.
+
+### 3. Configure optional AI services
+
+The backend reads a `.env` file in the `backend` directory when present. Create `backend/.env` with the settings you need:
+
+```dotenv
+USE_MOCK=True
+GEMINI_API_KEY=
+```
+
+- Keep `USE_MOCK=True` for predictable local testing of the texture endpoint.
+- Set `USE_MOCK=False` to attempt the Pollinations-based image request.
+- Add your Gemini API key to `GEMINI_API_KEY` only if you want the optional Gemini ceiling-analysis path.
+- **Never commit `backend/.env` or API keys to GitHub.** Ensure `.env` is listed in `.gitignore`.
+
+The ceiling-analysis code currently requests the model identifier `gemini-3.8-flash`. Verify that this identifier is available to your Gemini API account and update it if necessary. The analysis endpoint may use the computer-vision fallback if the API key is missing, the model is unavailable, or the request fails.
 
 ## Controls
 
 | Action | Input |
 |---|---|
 | Rotate selected furniture | `R` |
-| Move furniture (Arrange mode) | Click and drag |
-| Orbit / pan / zoom (Arrange mode) | Mouse drag / right-click drag / scroll |
-| Walk (Walk mode) | `W` `A` `S` `D` and mouse look |
-| Enter VR | "Enter VR" button, in a WebXR-capable browser |
+| Move furniture in Arrange mode | Click and drag, where supported |
+| Orbit / pan / zoom in Arrange mode | Mouse controls and scroll, depending on the active control |
+| Walk in Walk mode | `W`, `A`, `S`, `D` and mouse look |
+| Release pointer lock | `Esc` |
+| Enter VR | The VR button, only in a compatible WebXR environment |
 
----
+## VR and Browser Compatibility
 
-## Notes on VR
+WebXR requires a supported browser/device combination and a secure context. `localhost` is generally suitable for local development; a deployed site normally needs HTTPS. The current screenshots show **“VR NOT SUPPORTED”**, so VR should be described as an intended/optional capability until it has been successfully tested on a compatible headset and browser. First-person Walk Mode is separate from VR and can work without a headset.
 
-WebXR only works in a secure context. It runs on `localhost` during development, but any deployed version must be served over **HTTPS** or the "Enter VR" button will not activate.
+## Limitations and Notes
 
----
+- The room model is based on a rectangular layout; irregular room outlines are not established as supported.
+- Furniture-to-furniture collision handling is not established as complete.
+- First-person navigation should not be described as collision-safe unless wall and furniture collision behavior has been tested.
+- The computer-vision ceiling fallback uses image heuristics and may produce approximate or incorrect classifications.
+- Texture output depends on the external image endpoint when mock mode is disabled and falls back to a placeholder if generation fails.
+- The current published backend uses permissive CORS settings and the texture request code disables TLS certificate verification. These are development concerns that should be corrected before production deployment.
+- Verify the actual frontend-to-backend URL and confirm that generated images are applied to the selected surfaces before claiming end-to-end AI texture synthesis is complete.
 
-## Limitations
+## Future Improvements
 
-- Rooms are rectangular boxes, so irregular or angled layouts are not supported.
-- VR is look-around from a standing position, not a fully navigable experience with collision detection.
-- Furniture-to-furniture collision is not yet implemented.
-- Generated textures depend on the quality and tileability of the underlying image model.
-
----
-
-## Roadmap
-
-- Multi-room floor plans with parametric doorways
-- Furniture collision detection
-- Export of layouts to `.obj`, `.gltf`, or `.dwg`
-- Seamless-texture generation tuned specifically for interior materials
-
----
+- Verify and improve seamless/tileable texture generation for interior materials.
+- Add furniture-to-furniture and room-boundary collision handling where needed.
+- Improve ceiling-image analysis and validate the Gemini model configuration.
+- Test and document the VR experience on supported hardware.
+- Consider multi-room layouts and export formats after the current workflows are stable.
 
 ## Team
 
-- **Navaneeth B:** Phase 1, 3D engine, furniture system, VR
-- **[Teammate name]:** Phase 2, AI texture generation and design pipeline
+| Module | Member | Files Owned | Key Responsibilities |
+|---|---|---|---|
+| **Module 1 — 3D Room & Furniture** | **Navaneeth B** | `room.js` | Add the TV, sofa, doors, and windows in Three.js. |
+| **Module 2 — AI Texture Backend** | **Nandan Kumar J V** | `generation.py`, `main.py` | Fix the free image-generation API integration and add seamless texture tiling. |
+| **Module 3 — VR & Camera** | **Mohan K** | `main.js` | VR controller support, camera modes, lighting, and screenshots. |
+| **Module 4 — UI & Save/Load** | **Bhanushree CV** | `index.html`, `style.css` | Redesign the UI panel, save/load rooms as JSON, and export as `.glb`. |
 
----
+### Integration Dependencies
+
+- **Module 1** must finalize and document its public API — `generate()`, `applyTexture()`, and `applyColor()` — before Modules 3 and 4 integrate with it.
+- **Module 2's** `POST /generate-texture` endpoint is another key integration contract used by the team.
+
 
 ## Acknowledgements
 
-Built under the **Code Unnati** program by **SAP** and **Edunet Foundation**.
-
-3D models used in this project are subject to their original creators' licenses. Add attribution here for each asset you use.
-
----
-
-## License
-
-Add your preferred license here (for example MIT), or remove this section if the repository is for coursework only.
+Developed under the **Code Unnati** program by **SAP** and **Edunet Foundation**.
